@@ -1,0 +1,37 @@
+.listData {
+  position: relative;
+  left: 50%;
+  top: 50%;
+  transform: translate(-20%, -50%);
+}
+
+body {
+  font-size: 20px;
+}
+
+.mainTable {
+  width: calc(100% - 20%);
+  margin: 0 auto;
+}
+
+table,
+th,
+td {
+  border: 1px solid #7828c8;
+  text-align: center;
+}
+th,
+td {
+  padding: 20px;
+  background-color: none;
+}
+
+h1 {
+  color: #7828c8;
+}
+
+@media screen and (max-width: 680px) {
+  .appName {
+    margin: 4px auto;
+  }
+}
