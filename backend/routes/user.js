@@ -5,6 +5,16 @@ const {
     verifyTokenAndAuthorization,
     verifyTokenAndAdmin, } = require("./verifyToken")
 
+// If the JWT token is valid, anyone can edit,create,view or delete user
+// To avoid this, in verifyToken.js, I have wriiten seperate conditions
+
+// CONDITIONS
+// 1) If token is verified anyone can edit,create,view or delete user
+// 2) Token and Authorization both should be valid can edit,create,view or delete user
+// 3) Token and isAdmin should be true can edit,create,view or delete user
+
+// With these conditions,we can able to customize the app according to our need
+
 router.put("/:id", verifyToken, async (req, res) => {
     if (req.body.password) {
         req.body.password = CryptoJS.AES.encrypt(
@@ -32,9 +42,6 @@ router.delete("/find/:id", verifyToken, async (req, res) => {
     }
 })
 
-// Only if isAdmin is true, we can able to view the user details
-// TO make it true, manually we have to change it in MongoDB
-
 router.get("/find/:id", verifyToken, async (req, res) => {
     try {
         const user = await User.findById(req.params.id)
@@ -44,9 +51,6 @@ router.get("/find/:id", verifyToken, async (req, res) => {
         res.status(500).json(error)
     }
 })
-
-// Only if isAdmin = true, we can able to view all the users list
-// To make it true, manually we have to change it in MongoDB
 
 // Pagination has been done and I have set the limit to 1
 // If we want to fetch 10 users at a time, In PostMan, under params section
