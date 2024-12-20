@@ -72,7 +72,7 @@ function WelcomeScreen() {
     };
     setSignUpDetails(data);
     axios
-      .post("http://localhost:8000/api/auth/register", data)
+      .post("https://authentication-crud-8izu.onrender.com/api/auth/register", data)
       .then((res) => {
         console.log(res);
         setVisible(false);
@@ -115,7 +115,7 @@ function WelcomeScreen() {
       password: loginPassword,
     };
     axios
-      .post("http://localhost:8000/api/auth/login", data)
+      .post("https://authentication-crud-8izu.onrender.com/api/auth/login", data)
       .then((res) => {
         localStorage.setItem("jwt", `Bearer ${res.data.accessToken}`);
         localStorage.setItem("isAdmin", res.data.isAdmin);
@@ -143,7 +143,7 @@ function WelcomeScreen() {
 
   const verifyOTP = () => {
     axios
-      .post("http://localhost:8000/api/auth/verifyOTP", userIDOTP)
+      .post("https://authentication-crud-8izu.onrender.com/api/auth/verifyOTP", userIDOTP)
       .then((res) => {
         console.log(res);
         setVisible(false);

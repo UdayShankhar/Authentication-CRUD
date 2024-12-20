@@ -49,7 +49,7 @@ function UserList() {
 
   const fetchData = () => {
     axios
-      .get("http://localhost:8000/api/users", {
+      .get("https://authentication-crud-8izu.onrender.com/api/users", {
         headers: {
           "Content-Type": "application/json",
           token: localStorage.getItem("jwt"),
@@ -113,7 +113,7 @@ function UserList() {
       id: editUserDetailsValue.id,
     };
     axios
-      .put(`http://localhost:8000/api/users/updateUserDetails`, data, {
+      .put(`https://authentication-crud-8izu.onrender.com/api/users/updateUserDetails`, data, {
         headers: {
           "Content-Type": "application/json",
           token: localStorage.getItem("jwt"),
@@ -151,7 +151,7 @@ function UserList() {
 
   const DeleteUser = (e) => {
     axios
-      .delete(`http://localhost:8000/api/users/find/${e}`, {
+      .delete(`https://authentication-crud-8izu.onrender.com/api/users/find/${e}`, {
         headers: {
           "Content-Type": "application/json",
           token: localStorage.getItem("jwt"),
@@ -187,7 +187,7 @@ function UserList() {
       password: password,
     };
     axios
-      .post("http://localhost:8000/api/auth/register", data)
+      .post("https://authentication-crud-8izu.onrender.com/api/auth/register", data)
       .then((res) => {
         console.log(res);
         toast.success("New user added successfully", {
@@ -235,7 +235,7 @@ function UserList() {
 
     // Make the API request
     axios
-      .post("http://localhost:8000/api/users/create-user", newUser, {
+      .post("https://authentication-crud-8izu.onrender.com/api/users/create-user", newUser, {
         headers: {
           Authorization: `${token}`, // Include token in request headers
         },
