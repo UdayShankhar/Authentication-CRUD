@@ -1,21 +1,32 @@
 const jwt = require("jsonwebtoken");
 
 const verifyToken = (req, res, next) => {
-  const authHeader = req.headers.token;
-  if (authHeader) {
-    const token = authHeader.split(" ")[1];
-    jwt.verify(
-      token,
-      "77db33b2934e3eb520faeb163fa7c1646212eb04a54de046095821026a51e2b2",
-      (err, user) => {
-        if (err) res.status(403).json("Invalid Token");
-        req.user = user;
-        next();
-      }
-    );
-  } else {
-    return res.status(401).json("You are not authenticated");
+  const authHeader = req.headers.authorization || req.headers.token;
+
+  if (!authHeader) {
+    return res.status(401).json({ message: "Authentication token is missing" });
   }
+
+  const tokenMatch = authHeader.match(
+    /^Bearer\s([A-Za-z0-9\-_]+\.[A-Za-z0-9\-_]+\.[A-Za-z0-9\-_]+)/
+  );
+  const token = tokenMatch ? tokenMatch[1] : null;
+
+  if (!token) {
+    return res.status(401).json({ message: "Invalid token format" });
+  }
+
+  jwt.verify(
+    token,process.env.JWT_KEY,
+    (err, decoded) => {
+      if (err) {
+        return res.status(403).json({ message: "Invalid or expired token" });
+      }
+
+      req.user = decoded;
+      next();
+    }
+  );
 };
 
 const verifyTokenAndAuthorization = (req, res, next) => {

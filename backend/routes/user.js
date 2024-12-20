@@ -1,71 +1,110 @@
-const router = require("express").Router()
-const User = require("../models/User")
+const router = require("express").Router();
+const User = require("../models/User");
 const {
-    verifyToken,
-    verifyTokenAndAuthorization,
-    verifyTokenAndAdmin, } = require("./verifyToken")
+  verifyToken,
+  verifyTokenAndAuthorization,
+  verifyTokenAndAdmin,
+} = require("./verifyToken");
+const UserData = require("../models/UserData");
 
-// If the JWT token is valid, anyone can edit,create,view or delete user
-// To avoid this, in verifyToken.js, I have wriiten seperate conditions
+router.put("/updateUserDetails", async (req, res) => {
+  try {
+    // Extract user details from the request body
+    const { id, email, name, phoneNumber } = req.body;
 
-// CONDITIONS
-// 1) If token is verified anyone can edit,create,view or delete user
-// 2) Token and Authorization both should be valid can edit,create,view or delete user
-// 3) Token and isAdmin should be true can edit,create,view or delete user
-
-// With these conditions,we can able to customize the app according to our need
-
-router.put("/:id", verifyToken, async (req, res) => {
-    if (req.body.password) {
-        req.body.password = CryptoJS.AES.encrypt(
-            req.body.password,
-            process.env.PASS_SEC
-        ).toString()
+    if (!id) {
+      return res.status(400).json({ message: "User ID is required" });
     }
 
-    try {
-        const updatedUser = await User.findByIdAndUpdate(req.params.id, {
-            $set: req.body
-        }, { new: true })
-        res.status(200).json(updatedUser)
-    } catch (err) {
-        res.status(500).json(err)
+    // Find and update the user by ID
+    const updatedUser = await UserData.findByIdAndUpdate(
+      id, // Use the ID from the request body
+      {
+        $set: { email, name, phoneNumber },
+      },
+      { new: true } // Return the updated document
+    );
+
+    // Check if the user was found and updated
+    if (!updatedUser) {
+      return res.status(404).json({ message: "User not found" });
     }
-})
+
+    // Respond with the updated user details
+    res.status(200).json(updatedUser);
+  } catch (err) {
+    console.error(err);
+    res
+      .status(500)
+      .json({ message: "An error occurred during the update", error: err });
+  }
+});
+
+
 
 router.delete("/find/:id", verifyToken, async (req, res) => {
-    try {
-        await User.findByIdAndDelete(req.params.id)
-        res.status(200).json('User has been deleted')
-    } catch (error) {
-        res.status(500).json(error)
-    }
-})
+  try {
+    await UserData.findByIdAndDelete(req.params.id);
+    res.status(200).json("User has been deleted");
+  } catch (error) {
+    res.status(500).json(error);
+  }
+});
 
 router.get("/find/:id", verifyToken, async (req, res) => {
-    try {
-        const user = await User.findById(req.params.id)
-        const { password, ...others } = user._doc
-        res.status(200).json(others)
-    } catch (error) {
-        res.status(500).json(error)
-    }
-})
-
-// Pagination has been done and I have set the limit to 1
-// If we want to fetch 10 users at a time, In PostMan, under params section
-
-// 1) Give key as page and value to 1
-// 2) Give key as limit and value as 10 // This will give 10 users in a single page
+  try {
+    const user = await User.findById(req.params.id);
+    const { password, ...others } = user._doc;
+    res.status(200).json(others);
+  } catch (error) {
+    res.status(500).json(error);
+  }
+});
 
 router.get("/", verifyToken, async (req, res) => {
-    try {
-        const { page = 1, limit = 10 } = req.query
-        const users = await User.find().limit(limit * 1).skip((page - 1) * limit)
-        res.status(200).json({ total: users.length, users })
-    } catch (error) {
-        res.status(500).json(error)
-    }
-})
+  try {
+    if (req.user.isAdmin) {
+      const { page = 1, limit = 20 } = req.query;
+      const users = await UserData.find()
+        .limit(limit * 1)
+        .skip((page - 1) * limit);
+      res.status(200).json({ total: users.length, users });
+    } else {
+      console.log("Logged-in user ID:", req.user.id);
 
-module.exports = router
+      const { page = 1, limit = 10 } = req.query;
+      const userData = await UserData.find({ createdBy: req.user.id })
+        .limit(limit * 1)
+        .skip((page - 1) * limit);
+
+      if (userData.length === 0) {
+        return res.status(404).json({ message: "No data found for this user" });
+      }
+      res.status(200).json({ total: userData.length, data: userData });
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(500).json(error);
+  }
+});
+
+router.post("/create-user", verifyToken, async (req, res) => {
+  const { name, email, phoneNumber } = req.body;
+  console.log(req.body);
+  try {
+    const newUserData = new UserData({
+      name,
+      email,
+      phoneNumber,
+      createdBy: req.user.id, // Attach logged-in user's ID
+    });
+    console.log(newUserData);
+
+    const savedData = await newUserData.save();
+    res.status(201).json(savedData);
+  } catch (err) {
+    res.status(500).json(err);
+  }
+});
+
+module.exports = router;
